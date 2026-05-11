@@ -82,6 +82,8 @@
     <button onclick={checkPlate} disabled={loading}>
         {loading ? 'Checking...' : 'Check Plate'}
     </button>
+    
+    <br>    
 
     <br>
 
