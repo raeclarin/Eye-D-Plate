@@ -42,7 +42,19 @@
 
     const { data, error } = await supabase
         .from('vehicles')
-        .select('*')
+        .select(`
+    id,
+    plate_number,
+    normalized_plate_number,
+    make,
+    model,
+    color,
+    status,
+    personnel_id,
+    personnel:personnel_id (
+      first_name
+    )
+  `)
         .eq('normalized_plate_number', normalizedPlate)
         .eq('status', 'active')
         .maybeSingle();
@@ -56,6 +68,7 @@
 
     if (data) {
         console.log('Received data.');
+        console.log(data);
         matchedVehicle = data;
         message = 'This plate is registered.';
     } else {
@@ -107,6 +120,8 @@
 
     {#if matchedVehicle}
         <section style="margin-top: 1rem; padding: 1rem; border: 1px solid #ccc;">
+            
+            <p><strong>Owner Name:</strong> {matchedVehicle.personnel?.first_name}</p>
             <p><strong>Owner ID:</strong> {matchedVehicle.personnel_id}</p>
             <p><strong>Plate:</strong> {matchedVehicle.plate_number}</p>
             <p><strong>Vehicle Make:</strong> {matchedVehicle.make}</p>
