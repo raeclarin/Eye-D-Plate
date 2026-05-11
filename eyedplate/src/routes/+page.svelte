@@ -1,3 +1,6 @@
+<!-- Consider the fact that one vehicle can have multiple owners -->
+
+
 <script lang="ts">
     import { supabase } from '$lib/client';
 
@@ -5,6 +8,15 @@
     let loading = $state(false);
     let message = $state('');
     let matchedVehicle: any = $state(null);
+    let gateOpenState = $state(false);
+    
+    function openGate() {
+        gateOpenState = true;
+    }
+
+    function closeGate() {
+        gateOpenState = false;
+    }
 
     function normalizePlate(plate: string) {
     return plate
@@ -69,6 +81,20 @@
 
     <button onclick={checkPlate} disabled={loading}>
         {loading ? 'Checking...' : 'Check Plate'}
+    </button>
+
+    <br>
+
+    <h1><b>Gate Open Status: {gateOpenState}</b></h1>
+
+    <button onclick={openGate}>
+        Open Gate
+    </button>
+
+    <br>
+
+    <button onclick={closeGate}>
+        Close Gate
     </button>
 
     {#if message}
