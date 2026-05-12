@@ -4,9 +4,9 @@ import string
 import onnxruntime as ort
 from ultralytics import YOLO
 
-# 1. Define the Standard PARSeq Character Set (94 characters)
+# Define the Standard PARSeq Character Set (94 characters)
 # PARSeq outputs 95 classes: 94 printable characters + 1 [EOS] (End of Sequence) token.
-# Typically, the [EOS] token is at index 0, followed by the printable characters.
+# The [EOS] token is at index 0, followed by the printable characters.
 PARSEQ_CHARSET = list(string.digits + string.ascii_lowercase + string.ascii_uppercase + string.punctuation)
 
 def preprocess_plate_for_parseq(plate_img):
@@ -59,16 +59,15 @@ def decode_parseq_output(logits):
     return "".join(recognized_text)
 
 def main():
-    # 2. Initialize Models
+    # Initialize Models
     print("Loading YOLOv8 model...")
     yolo_model = YOLO("models/yolo.pt")  
     
     print("Loading PARSeq ONNX session...")
-    # Change 'parseq.onnx' to the actual path of your ONNX file
     parseq_session = ort.InferenceSession("models/model.onnx", providers=["CPUExecutionProvider"])
     parseq_input_name = parseq_session.get_inputs()[0].name
 
-    # 3. Initialize OpenCV VideoCapture (0 for default webcam, or pass a video file path)
+    # Initialize OpenCV VideoCapture (0 for default webcam)
     cap = cv2.VideoCapture(0)
     
     if not cap.isOpened():
@@ -84,7 +83,6 @@ def main():
             break
 
         # Run YOLO inference on the current frame
-        # verbose=False keeps the console clean during real-time capture
         results = yolo_model(frame, verbose=False)
         
         # Parse detections
@@ -93,8 +91,7 @@ def main():
             cls_id = int(box.cls[0].item())
             conf = box.conf[0].item()
             
-            # Assuming class 1 is 'plate' (adjust if 'plate' is class 0 in your model)
-            # You can also filter by confidence threshold (e.g., conf > 0.5)
+            # Class 1 is 'plate'
             if cls_id == 1 and conf > 0.5:
                 # Extract integer bounding box coordinates
                 x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
