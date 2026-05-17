@@ -61,10 +61,10 @@ def decode_parseq_output(logits):
 def main():
     # Initialize Models
     print("Loading YOLOv8 model...")
-    yolo_model = YOLO("models/yolo.pt")  
+    yolo_model = YOLO("C:/Users/Acer/Documents/pymodels/yolo.pt")  
     
     print("Loading PARSeq ONNX session...")
-    parseq_session = ort.InferenceSession("models/model.onnx", providers=["CPUExecutionProvider"])
+    parseq_session = ort.InferenceSession("C:/Users/Acer/Documents/pymodels/model.onnx")  
     parseq_input_name = parseq_session.get_inputs()[0].name
 
     # Initialize OpenCV VideoCapture (0 for default webcam)

@@ -42,11 +42,25 @@ def decode_parseq_output(logits):
 
 # Load Models Globally on Startup
 print("Loading YOLOv8 model...")
-yolo_model = YOLO("models/yolo.pt")
+yolo_model = YOLO("C:/Users/Acer/Documents/pymodels/yolo.pt")
 
 print("Loading PARSeq ONNX session...")
-parseq_session = ort.InferenceSession("models/model.onnx", providers=["CPUExecutionProvider"])
+parseq_session = ort.InferenceSession("C:/Users/Acer/Documents/pymodels/model.onnx", providers=["CPUExecutionProvider"])
 parseq_input_name = parseq_session.get_inputs()[0].name
+
+
+    
+
+print("Opening camera...")
+    
+    # Initialize Camera
+cap = cv2.VideoCapture(0)
+    # Lower resolution slightly if WebSocket transmission lags over local network
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    
+
+print("Camera opened")
 
 
 @app.websocket("/ws/stream")
@@ -56,11 +70,7 @@ async def video_stream_endpoint(websocket: WebSocket):
     """
     await websocket.accept()
     
-    # Initialize Camera
-    cap = cv2.VideoCapture(0)
-    # Lower resolution slightly if WebSocket transmission lags over local network
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    print("WebSocket connected")
 
     try:
         while True:

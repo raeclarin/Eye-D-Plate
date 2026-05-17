@@ -40,6 +40,7 @@
 		"@supabase/supabase-js": "^2.105.4",
 		"postgres": "^3.4.9",
 		"supabase": "^2.98.2",
-		"supabase-js": "^0.0.1-security"
+		"supabase-js": "^0.0.1-security",
+		"websockets": "^0.2.0"
 	}
 }

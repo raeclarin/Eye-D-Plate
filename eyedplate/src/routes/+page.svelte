@@ -3,6 +3,30 @@
 
 <script lang="ts">
     import { supabase } from '$lib/client';
+    
+    let imageSrc = $state('');
+    let detections = [];
+
+    const socket = new WebSocket("ws://localhost:8000/ws/stream");
+
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        imageSrc = data.image;
+        detections = data.detections;
+
+        console.log(data.status);
+        console.log(data.detections);
+    };
+
+
+    socket.onerror = (err) => {
+        console.error("WebSocket error:", err);
+    };
+
+    socket.onclose = () => {
+        console.log("WebSocket closed.");
+    };
 
     let plateInput = $state('');
     let loading = $state(false);
@@ -82,6 +106,13 @@
 
 <main style="max-width: 600px; margin: 3rem auto; font-family: sans-serif;">
     <h1><b>Eye-D-Plate</b></h1>
+
+    
+    {#if imageSrc}
+        <img src={imageSrc} width="300" alt="qbb"/>
+    {:else}
+        <p>No image found.</p>
+    {/if}
 
     <label for="plate">Enter a plate number.</label>
 
