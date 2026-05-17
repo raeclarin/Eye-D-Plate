@@ -16,9 +16,9 @@
 
         if (data.detections[0]) {
             detections = data.detections[0].text;
+            console.log(detections);
+            checkPlate();
         };
-
-        console.log(detections);
     };
 
 
@@ -52,56 +52,52 @@
     }
 
     async function checkPlate() {
-    console.log('Click!');
-    loading = true;
-    message = '';
-    matchedVehicle = null;
+        console.log('Sent plate data.');
+        loading = true;
+        message = '';
+        matchedVehicle = null;
 
-    const normalizedPlate = normalizePlate(detections[0]);
+        const normalizedPlate = normalizePlate(detections);
 
-    if (!normalizedPlate) {
-        message = 'Please enter a plate number.';
+        const { data, error } = await supabase
+            .from('vehicles')
+            .select(`
+                id,
+                plate_number,
+                normalized_plate_number,
+                vehicle_type,
+                make,
+                model,
+                color,
+                status,
+                personnel_id,
+                personnel (
+                  first_name,
+                  last_name
+                )
+            `)
+            .eq('normalized_plate_number', normalizedPlate)
+            .eq('status', 'active')
+            .maybeSingle();
+
+        if (error) {
+            console.log({ data, error });
+            message = `Database error: ${error.message}`;
+            loading = false;
+            return;
+        }
+
+        if (data) {
+            console.log('Received data.');
+            console.log(data);
+            matchedVehicle = data;
+            message = 'This plate is registered.';
+        } else {
+            console.log('Received data.');
+            message = 'This plate is not registered.';
+        }
+
         loading = false;
-        return;
-    }
-
-    const { data, error } = await supabase
-        .from('vehicles')
-        .select(`
-    id,
-    plate_number,
-    normalized_plate_number,
-    make,
-    model,
-    color,
-    status,
-    personnel_id,
-    personnel:personnel_id (
-      first_name
-    )
-  `)
-        .eq('normalized_plate_number', normalizedPlate)
-        .eq('status', 'active')
-        .maybeSingle();
-
-    if (error) {
-        console.log({ data, error });
-        message = `Database error: ${error.message}`;
-        loading = false;
-        return;
-    }
-
-    if (data) {
-        console.log('Received data.');
-        console.log(data);
-        matchedVehicle = data;
-        message = 'This plate is registered.';
-    } else {
-        console.log('Received data.');
-        message = 'This plate is not registered.';
-    }
-
-    loading = false;
     }
 </script>
 
@@ -161,9 +157,10 @@
     {#if matchedVehicle}
         <section style="margin-top: 1rem; padding: 1rem; border: 1px solid #ccc;">
             
-            <p><strong>Owner Name:</strong> {matchedVehicle.personnel?.first_name}</p>
+            <p><strong>Owner Name:</strong> {matchedVehicle.personnel?.first_name + " " + matchedVehicle.personnel?.last_name}</p>
             <p><strong>Owner ID:</strong> {matchedVehicle.personnel_id}</p>
             <p><strong>Plate:</strong> {matchedVehicle.plate_number}</p>
+            <p><strong>Vehicle Type:</strong> {matchedVehicle.vehicle_type}</p>
             <p><strong>Vehicle Make:</strong> {matchedVehicle.make}</p>
             <p><strong>Vehicle Model:</strong> {matchedVehicle.model}</p>
             <p><strong>Color:</strong> {matchedVehicle.color}</p>
