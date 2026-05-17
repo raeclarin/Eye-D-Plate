@@ -73,7 +73,9 @@
                 personnel_id,
                 personnel (
                   first_name,
-                  last_name
+                  last_name,
+                  role,
+                  department
                 )
             `)
             .eq('normalized_plate_number', normalizedPlate)
@@ -159,6 +161,9 @@
             
             <p><strong>Owner Name:</strong> {matchedVehicle.personnel?.first_name + " " + matchedVehicle.personnel?.last_name}</p>
             <p><strong>Owner ID:</strong> {matchedVehicle.personnel_id}</p>
+            <p><strong>Department:</strong> {matchedVehicle.personnel?.department}</p>
+            <p><strong>Rank:</strong> {matchedVehicle.personnel?.role}</p>
+            <br>
             <p><strong>Plate:</strong> {matchedVehicle.plate_number}</p>
             <p><strong>Vehicle Type:</strong> {matchedVehicle.vehicle_type}</p>
             <p><strong>Vehicle Make:</strong> {matchedVehicle.make}</p>
