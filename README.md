@@ -1,6 +1,6 @@
 Welcome to Eye-D-Plate!
 
-Software required: Node.js, NPM, Svelte
+Software required: Node.js, NPM, Svelte, Python, model files (approx. 100 mbs each, so has to be locally downloaded.)
 
 To run:
 - Navigate to the folder.

@@ -5,7 +5,7 @@
     import { supabase } from '$lib/client';
     
     let imageSrc = $state('');
-    let detections = [];
+    let detections = $state('');
 
     const socket = new WebSocket("ws://localhost:8000/ws/stream");
 
@@ -13,10 +13,12 @@
         const data = JSON.parse(event.data);
 
         imageSrc = data.image;
-        detections = data.detections;
 
-        console.log(data.status);
-        console.log(data.detections);
+        if (data.detections[0]) {
+            detections = data.detections[0].text;
+        };
+
+        console.log(detections);
     };
 
 
@@ -28,7 +30,6 @@
         console.log("WebSocket closed.");
     };
 
-    let plateInput = $state('');
     let loading = $state(false);
     let message = $state('');
     let matchedVehicle: any = $state(null);
@@ -56,7 +57,7 @@
     message = '';
     matchedVehicle = null;
 
-    const normalizedPlate = normalizePlate(plateInput);
+    const normalizedPlate = normalizePlate(detections[0]);
 
     if (!normalizedPlate) {
         message = 'Please enter a plate number.';
@@ -114,6 +115,14 @@
         <p>No image found.</p>
     {/if}
 
+    {#if detections}
+        <p><b>Last scanned plate: {detections}</b></p>
+    {:else}
+        <p>No plate found.</p>
+    {/if}
+
+    <!--
+
     <label for="plate">Enter a plate number.</label>
 
     <input
@@ -130,7 +139,7 @@
     <br>    
 
     <br>
-
+ -->
     <h1><b>Gate Open Status: {gateOpenState}</b></h1>
 
     <button onclick={openGate}>
