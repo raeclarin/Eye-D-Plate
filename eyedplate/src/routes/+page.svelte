@@ -136,75 +136,229 @@
 </script>
 
 <main style="max-width: 600px; margin: 3rem auto; font-family: sans-serif;">
-    <h1><b>Eye-D-Plate</b></h1>
+    <h1 class="title">Eye-D-Plate</h1>
 
-    
-    {#if imageSrc}
-        <img src={imageSrc} width="300" alt="qbb"/>
-    {:else}
-        <p>No image found.</p>
-    {/if}
+    <section class="card">
+        <h2>Live Camera Feed</h2>
 
-    {#if detections}
-        <p><b>Last scanned plate: {detections}</b></p>
-    {:else}
-        <p>No plate found.</p>
-    {/if}
+        {#if imageSrc}
+            <img class="camera-feed" src={imageSrc} alt="Camera Feed" />
+        {:else}
+            <p class="muted">No image found.</p>
+        {/if}
+    </section>
 
-    <!--
+    <section class="card">
+        <h2>Detection Status</h2>
 
-    <label for="plate">Enter a plate number.</label>
+        {#if detections}
+            <p class="plate">
+                {detections}
+            </p>
+        {:else}
+            <p class="muted">No plate detected.</p>
+        {/if}
 
-    <input
-        id="plate"
-        bind:value={plateInput}
-        placeholder="Example: ABC 1234"
-        style="display: block; width: 100%; padding: 0.75rem; margin: 0.5rem 0 1rem;"
-    />
+        <p class:open={gateOpenState} class:closed={!gateOpenState}>
+            Gate Status:
+            <strong>
+                {gateOpenState ? 'OPEN' : 'CLOSED'}
+            </strong>
+        </p>
+    </section>
 
-    <button onclick={checkPlate} disabled={loading}>
-        {loading ? 'Checking...' : 'Check Plate'}
-    </button>
-    
-    <br>    
+    <section class="controls">
+        <button class="primary" onclick={openGate}>
+            Open Gate
+        </button>
 
-    <br>
- -->
-    <h1><b>Gate Open Status: {gateOpenState}</b></h1>
-
-    <button onclick={openGate}>
-        Open Gate
-    </button>
-
-    <br>
-
-    <button onclick={closeGate}>
-        Close Gate
-    </button>
+        <button class="danger" onclick={closeGate}>
+            Close Gate
+        </button>
+    </section>
 
     {#if message}
-        <p style="margin-top: 1.5rem; font-weight: bold;">
-            {message}
-        </p>
-    {/if}
-
-    {#if matchedVehicle}
-        <section style="margin-top: 1rem; padding: 1rem; border: 1px solid #ccc;">
-            
-            <p><strong>Owner Name:</strong> {matchedVehicle.personnel?.first_name + " " + matchedVehicle.personnel?.last_name}</p>
-            <p><strong>Owner ID:</strong> {matchedVehicle.personnel_id}</p>
-            <p><strong>Department:</strong> {matchedVehicle.personnel?.department}</p>
-            <p><strong>Rank:</strong> {matchedVehicle.personnel?.role}</p>
-            <br>
-            <p><strong>Plate:</strong> {matchedVehicle.plate_number}</p>
-            <p><strong>Vehicle Type:</strong> {matchedVehicle.vehicle_type}</p>
-            <p><strong>Vehicle Make:</strong> {matchedVehicle.make}</p>
-            <p><strong>Vehicle Model:</strong> {matchedVehicle.model}</p>
-            <p><strong>Color:</strong> {matchedVehicle.color}</p>
+        <section class="card">
+            <p class="message">
+                {message}
+            </p>
         </section>
     {/if}
 
-    <button onclick={connectToArduino}>Connect Arduino via USB</button>
-    <input type="text" bind:value={textToSend} />
-    <button onclick={sendState}>Send State to Arduino</button>
+    {#if matchedVehicle}
+        <section class="card">
+            <h2>Registered Vehicle</h2>
+
+            <div class="info-grid">
+                <p><strong>Owner:</strong> {matchedVehicle.personnel?.first_name} {matchedVehicle.personnel?.last_name}</p>
+
+                <p><strong>ID:</strong> {matchedVehicle.personnel_id}</p>
+
+                <p><strong>Department:</strong> {matchedVehicle.personnel?.department}</p>
+
+                <p><strong>Rank:</strong> {matchedVehicle.personnel?.role}</p>
+
+                <p><strong>Plate:</strong> {matchedVehicle.plate_number}</p>
+
+                <p><strong>Type:</strong> {matchedVehicle.vehicle_type}</p>
+
+                <p><strong>Make:</strong> {matchedVehicle.make}</p>
+
+                <p><strong>Model:</strong> {matchedVehicle.model}</p>
+
+                <p><strong>Color:</strong> {matchedVehicle.color}</p>
+            </div>
+        </section>
+    {/if}
+
+    <section class="card">
+        <h2>Arduino Control</h2>
+
+        <div class="arduino-controls">
+            <button class="secondary" onclick={connectToArduino}>
+                Connect Arduino
+            </button>
+
+            <input
+                type="text"
+                bind:value={textToSend}
+                placeholder="Send command..."
+            />
+
+            <button class="primary" onclick={sendState}>
+                Send
+            </button>
+        </div>
+    </section> 
 </main>
+<style>
+    :global(body) {
+        margin: 0;
+        background: #f4f6f8;
+        font-family:
+            Inter,
+            system-ui,
+            sans-serif;
+        color: #1f2937;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 1rem;
+    }
+
+    .title {
+        text-align: center;
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        font-weight: 700;
+    }
+
+    .card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow:
+            0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    .camera-feed {
+        width: 100%;
+        border-radius: 12px;
+        margin-top: 1rem;
+    }
+
+    .muted {
+        color: #6b7280;
+    }
+
+    .plate {
+        font-size: 2rem;
+        font-weight: bold;
+        letter-spacing: 0.15rem;
+        margin-top: 1rem;
+    }
+
+    .controls {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    button {
+        border: none;
+        border-radius: 12px;
+        padding: 0.9rem 1.2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+
+        transition:
+            transform 0.15s ease,
+            opacity 0.15s ease;
+    }
+
+    button:hover {
+        transform: translateY(-2px);
+        opacity: 0.92;
+    }
+
+    .primary {
+        background: #2563eb;
+        color: white;
+    }
+
+    .danger {
+        background: #dc2626;
+        color: white;
+    }
+
+    .secondary {
+        background: #374151;
+        color: white;
+    }
+
+    .open {
+        color: #16a34a;
+    }
+
+    .closed {
+        color: #dc2626;
+    }
+
+    .message {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .arduino-controls {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+    }
+
+    input {
+        flex: 1;
+        min-width: 220px;
+
+        padding: 0.9rem;
+        border-radius: 12px;
+        border: 1px solid #d1d5db;
+        font-size: 1rem;
+    }
+
+    h2 {
+        margin-top: 0;
+        margin-bottom: 1rem;
+    }
+</style>
