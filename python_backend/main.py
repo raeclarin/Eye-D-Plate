@@ -77,7 +77,7 @@ async def video_stream_endpoint(websocket: WebSocket):
             # Offload blocking camera read to a separate thread to keep asyncio non-blocking
             ret, frame = await asyncio.to_thread(cap.read)
             if not ret:
-                await asyncio.sleep(0.03) # Wait briefly and retry if frame drops
+                await asyncio.sleep(0.01) # Wait briefly and retry if frame drops
                 continue
 
             detections_payload = []
@@ -138,7 +138,7 @@ async def video_stream_endpoint(websocket: WebSocket):
             await websocket.send_text(json.dumps(message))
             
             # Yield control back to the event loop to maintain stability (~30 FPS cap)
-            await asyncio.sleep(0.01)
+            await asyncio.sleep(0.001)
 
     except WebSocketDisconnect:
         print("Client disconnected from WebSocket stream.")
