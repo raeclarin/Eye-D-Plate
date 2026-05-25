@@ -1,6 +1,4 @@
 <!-- Consider the fact that one vehicle can have multiple owners -->
-
-
 <script lang="ts">
     import { supabase } from '$lib/client';
     
@@ -101,6 +99,40 @@
 
         loading = false;
     }
+
+    // Async loop for Arduino
+
+            
+    let port: SerialPort | null = null;
+    let textToSend = $state("LED_ON");
+
+    async function connectToArduino() {
+        try {
+        // Prompt user to select the Arduino USB port
+        port = await navigator.serial.requestPort();
+        // Open the port at 9600 baud rate
+        await port.open({ baudRate: 9600 });
+        alert("Connected to Arduino!");
+        } catch (error) {
+        console.error("Connection failed:", error);
+        }
+    }
+
+    async function sendState() {
+        if (!port || !port.writable) {
+        alert("Please connect to Arduino first!");
+        return;
+        }
+
+        const encoder = new TextEncoder();
+        const writer = port.writable.getWriter();
+        
+        // Add a newline character so Arduino knows the message ended
+        const dataWithNewline = textToSend + "\n"; 
+        
+        await writer.write(encoder.encode(dataWithNewline));
+        writer.releaseLock();
+    }
 </script>
 
 <main style="max-width: 600px; margin: 3rem auto; font-family: sans-serif;">
@@ -171,4 +203,8 @@
             <p><strong>Color:</strong> {matchedVehicle.color}</p>
         </section>
     {/if}
+
+    <button onclick={connectToArduino}>Connect Arduino via USB</button>
+    <input type="text" bind:value={textToSend} />
+    <button onclick={sendState}>Send State to Arduino</button>
 </main>

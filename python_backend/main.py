@@ -56,8 +56,8 @@ print("Opening camera...")
     # Initialize Camera
 cap = cv2.VideoCapture(0)
     # Lower resolution slightly if WebSocket transmission lags over local network
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
     
 
 print("Camera opened")
