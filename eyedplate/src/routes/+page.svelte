@@ -197,11 +197,9 @@
                 <p><strong>Department:</strong> {matchedVehicle.personnel?.department}</p>
 
                 <p><strong>Rank:</strong> {matchedVehicle.personnel?.role}</p>
-
                 <p><strong>Plate:</strong> {matchedVehicle.plate_number}</p>
 
                 <p><strong>Type:</strong> {matchedVehicle.vehicle_type}</p>
-
                 <p><strong>Make:</strong> {matchedVehicle.make}</p>
 
                 <p><strong>Model:</strong> {matchedVehicle.model}</p>

@@ -7,9 +7,16 @@ import string
 import onnxruntime as ort
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from ultralytics import YOLO
+import torch
 
 
 app = FastAPI(title="ANPR Backend API")
+
+print(f"CUDA Available: {torch.cuda.is_available()}")
+
+if torch.cuda.is_available():
+    print(f"Device: {torch.cuda.get_device_name(0)}")
+
 
 # Standard PARSeq Character Set
 PARSEQ_CHARSET = list(string.digits + string.ascii_lowercase + string.ascii_uppercase + string.punctuation)
