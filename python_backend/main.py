@@ -55,10 +55,10 @@ yolo_path = os.path.join(base_dir, "models", "yolo.pt")
 parseq_path = os.path.join(base_dir, "models", "model.onnx")
 
 print("Loading YOLOv8 model...")
-yolo_model = YOLO(yolo_path)
+yolo_model = YOLO("C:/Users/Acer/Documents/pymodels/yolo.pt")
 
 print("Loading PARSeq ONNX session...")
-parseq_session = ort.InferenceSession(parseq_path, providers=["CPUExecutionProvider"])
+parseq_session = ort.InferenceSession("C:/Users/Acer/Documents/pymodels/model.onnx", providers=["CPUExecutionProvider"])
 parseq_input_name = parseq_session.get_inputs()[0].name
 
 

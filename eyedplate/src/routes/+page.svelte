@@ -96,6 +96,17 @@
             console.log(data);
             matchedVehicle = data;
             message = 'This plate is registered.';
+
+            console.log('Posting log data.');
+            await supabase
+            .from('vehicle_logs')
+            .insert({
+                vehicle_id: matchedVehicle.id,
+                personnel_id: matchedVehicle.personnel_id,
+                detected_plate: detections,
+                normalized_detected_plate: normalizedPlate,
+            });
+            console.log('Posted log data.');
         } else {
             console.log('Received data.');
             message = 'This plate is not registered.';
