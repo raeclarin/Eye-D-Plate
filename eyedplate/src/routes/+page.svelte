@@ -10,13 +10,17 @@
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
 
-        imageSrc = data.image;
+        // 1. Update the image stream
+        if (data.image) {
+            imageSrc = data.image;
+        }
 
-        if (data.detections[0]) {
-            detections = data.detections[0].text;
-            console.log(detections);
+        // 2. Check for confirmed plate recognitions instead of 'detections'
+        if (data.new_recognitions && data.new_recognitions.length > 0) {
+            detections = data.new_recognitions[0].text;
+            console.log("Confirmed plate:", detections);
             checkPlate();
-        };
+        }
     };
 
 

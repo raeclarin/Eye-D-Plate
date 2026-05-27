@@ -69,10 +69,10 @@ print("Opening camera...")
     # Initialize Camera
 cap = cv2.VideoCapture(0)
     # Lower resolution slightly if WebSocket transmission lags over local network
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 240)
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
     
-
+0
 print("Camera opened")
 
 
@@ -82,18 +82,26 @@ async def video_stream_endpoint(websocket: WebSocket):
     WebSocket endpoint that streams live frames and detection data.
     """
     await websocket.accept()
-    
     print("WebSocket connected")
+
+    # For buffering plate detections across frames to confirm recognition
+    plate_buffer_counts = {}
+    last_confirmed_plate = None
 
     try:
         while True:
             # Offload blocking camera read to a separate thread to keep asyncio non-blocking
             ret, frame = await asyncio.to_thread(cap.read)
             if not ret:
-                await asyncio.sleep(0.01) # Wait briefly and retry if frame drops
+                await asyncio.sleep(0.01)
                 continue
 
-            detections_payload = []
+            # Separate payloads for drawing vs. logging
+            frame_detections = []
+            new_confirmed_events = []
+            
+            # Keep track of plates currently visible to clear old buffers
+            current_frame_plates = set()
             
             # Run YOLO detection
             results = await asyncio.to_thread(yolo_model, frame, verbose=False)
@@ -124,33 +132,57 @@ async def video_stream_endpoint(websocket: WebSocket):
                     )
                     plate_text = decode_parseq_output(parseq_outputs[0])
                     
-                    # Append data to frame payload
-                    detections_payload.append({
+                    # Mark this plate as seen in the current frame
+                    current_frame_plates.add(plate_text)
+                    
+                    # 1. Always append to frame_detections for the live UI overlay
+                    frame_detections.append({
                         "text": plate_text,
                         "confidence": float(f"{conf:.2f}"),
                         "bounding_box": [x1, y1, x2, y2]
                     })
+                    
+                    # 2. Add to 3-frame buffer count
+                    plate_buffer_counts[plate_text] = plate_buffer_counts.get(plate_text, 0) + 1
+                    
+                    # 3. Check for 3-frame confirmation and deduplication
+                    if plate_buffer_counts[plate_text] >= 3:
+                        if plate_text != last_confirmed_plate:
+                            last_confirmed_plate = plate_text
+                            new_confirmed_events.append({
+                                "text": plate_text,
+                                "confidence": float(f"{conf:.2f}")
+                            })
+                        
+                        # Cap the count to prevent number incrementing indefinitely
+                        plate_buffer_counts[plate_text] = 3
                     
                     # Draw UI overlay directly onto the outgoing frame
                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
                     cv2.putText(frame, f"{plate_text} ({conf:.2f})", (x1, max(y1 - 10, 10)),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
 
+            # This resets the counter if a misread happens for only 1 or 2 frames
+            keys_to_remove = [p for p in plate_buffer_counts if p not in current_frame_plates]
+            for p in keys_to_remove:
+                del plate_buffer_counts[p]
+
             # Encode frame as JPEG
             _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
             frame_base64 = base64.b64encode(buffer).decode('utf-8')
 
-            # Construct the comprehensive JSON message
+            # Construct the comprehensive JSON message with separated lists
             message = {
                 "status": "success",
-                "detections": detections_payload,
+                "live_overlay": frame_detections,        # Use for live feed boxes
+                "new_recognitions": new_confirmed_events, # Use for recording entries
                 "image": f"data:image/jpeg;base64,{frame_base64}"
             }
 
             # Send payload to the Node.js client
             await websocket.send_text(json.dumps(message))
             
-            # Yield control back to the event loop to maintain stability (~30 FPS cap)
+            # Yield control back to the event loop
             await asyncio.sleep(0.001)
 
     except WebSocketDisconnect:
