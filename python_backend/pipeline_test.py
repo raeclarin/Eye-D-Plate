@@ -3,6 +3,7 @@ import numpy as np
 import string
 import onnxruntime as ort
 from ultralytics import YOLO
+import os
 
 # Define the Standard PARSeq Character Set (94 characters)
 # PARSeq outputs 95 classes: 94 printable characters + 1 [EOS] (End of Sequence) token.
@@ -59,16 +60,21 @@ def decode_parseq_output(logits):
     return "".join(recognized_text)
 
 def main():
+    # Get dynamic paths relative to this script
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    yolo_path = os.path.join(base_dir, "models", "yolo.pt")
+    parseq_path = os.path.join(base_dir, "models", "model.onnx")
+
     # Initialize Models
     print("Loading YOLOv8 model...")
-    yolo_model = YOLO("C:/Users/Acer/Documents/pymodels/yolo.pt")  
+    yolo_model = YOLO(yolo_path)  
     
     print("Loading PARSeq ONNX session...")
-    parseq_session = ort.InferenceSession("C:/Users/Acer/Documents/pymodels/model.onnx")  
+    parseq_session = ort.InferenceSession(parseq_path)  
     parseq_input_name = parseq_session.get_inputs()[0].name
 
     # Initialize OpenCV VideoCapture (0 for default webcam)
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(1)
     
     if not cap.isOpened():
         print("Error: Could not open video feed.")
@@ -92,7 +98,7 @@ def main():
             conf = box.conf[0].item()
             
             # Class 1 is 'plate'
-            if cls_id == 1 and conf > 0.5:
+            if cls_id == 1 and conf > 0.25:
                 # Extract integer bounding box coordinates
                 x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
                 

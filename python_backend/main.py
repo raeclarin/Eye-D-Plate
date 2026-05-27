@@ -8,6 +8,7 @@ import onnxruntime as ort
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from ultralytics import YOLO
 import torch
+import os
 
 
 app = FastAPI(title="ANPR Backend API")
@@ -48,11 +49,16 @@ def decode_parseq_output(logits):
     return "".join(recognized_text)
 
 # Load Models Globally on Startup
+# Get dynamic paths relative to this script
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+yolo_path = os.path.join(base_dir, "models", "yolo.pt")
+parseq_path = os.path.join(base_dir, "models", "model.onnx")
+
 print("Loading YOLOv8 model...")
-yolo_model = YOLO("C:/Users/Acer/Documents/pymodels/yolo.pt")
+yolo_model = YOLO(yolo_path)
 
 print("Loading PARSeq ONNX session...")
-parseq_session = ort.InferenceSession("C:/Users/Acer/Documents/pymodels/model.onnx", providers=["CPUExecutionProvider"])
+parseq_session = ort.InferenceSession(parseq_path, providers=["CPUExecutionProvider"])
 parseq_input_name = parseq_session.get_inputs()[0].name
 
 
@@ -97,7 +103,7 @@ async def video_stream_endpoint(websocket: WebSocket):
                 conf = box.conf[0].item()
                 
                 # Context mapping: {0: 'vehicle', 1: 'plate'}
-                if cls_id == 1 and conf > 0.5:
+                if cls_id == 1 and conf > 0.25:
                     x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
                     
                     # Boundary checks
