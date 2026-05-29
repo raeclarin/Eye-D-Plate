@@ -162,102 +162,131 @@
     }
 </script>
 
-<main style="max-width: 600px; margin: 3rem auto; font-family: sans-serif;">
-    <h1 class="title">Eye-D-Plate</h1>
+<main class="dashboard">
 
-    <section class="card">
-        <h2>Live Camera Feed</h2>
+    <!-- LEFT SIDE -->
+    <section class="left-panel">
 
-        {#if imageSrc}
-            <img class="camera-feed" src={imageSrc} alt="Camera Feed" />
-        {:else}
-            <p class="muted">No image found.</p>
-        {/if}
-    </section>
-
-    <section class="card">
-        <h2>Detection Status</h2>
-
-        {#if detections}
-            <p class="plate">
-                {detections}
-            </p>
-        {:else}
-            <p class="muted">No plate detected.</p>
-        {/if}
-
-        <p class:open={gateOpenState} class:closed={!gateOpenState}>
-            Gate Status:
-            <strong>
-                {gateOpenState ? 'OPEN' : 'CLOSED'}
-            </strong>
-        </p>
-    </section>
-
-    <section class="controls">
-        <button class="primary" onclick={openGate}>
-            Open Gate
-        </button>
-
-        <button class="danger" onclick={closeGate}>
-            Close Gate
-        </button>
-    </section>
-
-    {#if message}
         <section class="card">
-            <p class="message">
-                {message}
-            </p>
+            <h2>Live Camera Feed</h2>
+
+            {#if imageSrc}
+                <img class="camera-feed" src={imageSrc} alt="Camera Feed" />
+            {:else}
+                <p class="muted">No image found.</p>
+            {/if}
         </section>
-    {/if}
 
-    {#if matchedVehicle}
         <section class="card">
-            <h2>Registered Vehicle</h2>
+            <h2>Detection Status</h2>
 
-            <div class="info-grid">
-                <p><strong>Owner:</strong> {matchedVehicle.personnel?.first_name} {matchedVehicle.personnel?.last_name}</p>
+            {#if detections}
+                <p class="plate">
+                    {detections}
+                </p>
+            {:else}
+                <p class="muted">No plate detected.</p>
+            {/if}
 
-                <p><strong>ID:</strong> {matchedVehicle.personnel_id}</p>
+            <div class="status-row">
+                <span>Gate Status</span>
 
-                <p><strong>Department:</strong> {matchedVehicle.personnel?.department}</p>
-
-                <p><strong>Rank:</strong> {matchedVehicle.personnel?.role}</p>
-                <p><strong>Plate:</strong> {matchedVehicle.plate_number}</p>
-
-                <p><strong>Type:</strong> {matchedVehicle.vehicle_type}</p>
-                <p><strong>Make:</strong> {matchedVehicle.make}</p>
-
-                <p><strong>Model:</strong> {matchedVehicle.model}</p>
-
-                <p><strong>Color:</strong> {matchedVehicle.color}</p>
+                <span class:open={gateOpenState} class:closed={!gateOpenState}>
+                    {gateOpenState ? 'OPEN' : 'CLOSED'}
+                </span>
             </div>
         </section>
-    {/if}
 
-    <section class="card">
-        <h2>Arduino Control</h2>
-
-        <div class="arduino-controls">
-            <button class="secondary" onclick={connectToArduino}>
-                Connect Arduino
+        <section class="controls">
+            <button class="primary" onclick={openGate}>
+                Open Gate
             </button>
-            <!--
-            <input
-                type="text"
-                bind:value={textToSend}
-                placeholder="Send command..."
-            />
 
-            <button class="primary" onclick={sendState}>
-                Send
+            <button class="danger" onclick={closeGate}>
+                Close Gate
             </button>
-            -->
-        </div>
-    </section> 
+        </section>
+
+    </section>
+
+    <!-- RIGHT SIDE -->
+    <section class="right-panel">
+
+        {#if message}
+            <section class="card">
+                <p class="message">
+                    {message}
+                </p>
+            </section>
+        {/if}
+
+        {#if matchedVehicle}
+            <section class="card">
+                <h2>Registered Vehicle</h2>
+
+                <div class="info-grid">
+
+                    <div class="info-item">
+                        <span class="label">Owner</span>
+                        <span>{matchedVehicle.personnel?.first_name} {matchedVehicle.personnel?.last_name}</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="label">Department</span>
+                        <span>{matchedVehicle.personnel?.department}</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="label">Rank</span>
+                        <span>{matchedVehicle.personnel?.role}</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="label">Plate</span>
+                        <span>{matchedVehicle.plate_number}</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="label">Vehicle</span>
+                        <span>{matchedVehicle.make} {matchedVehicle.model}</span>
+                    </div>
+
+                    <div class="info-item">
+                        <span class="label">Color</span>
+                        <span>{matchedVehicle.color}</span>
+                    </div>
+
+                </div>
+            </section>
+        {/if}
+
+        <section class="card">
+            <h2>Arduino Control</h2>
+
+            <div class="arduino-controls">
+                <button class="secondary" onclick={connectToArduino}>
+                    Connect Arduino
+                </button>
+            </div>
+        </section>
+
+    </section>
+
 </main>
 <style>
+    .dashboard {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr;
+
+    gap: 2rem;
+
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 1rem;
+
+    align-items: start;
+}
+
     :global(body) {
         margin: 0;
         background: #f4f6f8;
@@ -285,7 +314,8 @@
     }
 
     .camera-feed {
-        width: 100%;
+        width: 60%;
+        height: 50%;
         border-radius: 12px;
         margin-top: 1rem;
     }
