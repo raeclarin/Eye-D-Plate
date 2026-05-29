@@ -119,7 +119,7 @@
 
             
     let port: SerialPort | null = null;
-    let textToSend = $state("LED_ON");
+    let textToSend = $state("OPEN");
 
     async function connectToArduino() {
         try {
