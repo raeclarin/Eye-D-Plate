@@ -119,7 +119,7 @@
 
             
     let port: SerialPort | null = null;
-    let textToSend = $state("OPEN");
+    let textToSend = $state("");
 
     async function connectToArduino() {
         try {
@@ -144,6 +144,8 @@
         
         // Add a newline character so Arduino knows the message ended
         const dataWithNewline = textToSend + "\n"; 
+
+        console.log(dataWithNewline);
         
         await writer.write(encoder.encode(dataWithNewline));
         writer.releaseLock();
