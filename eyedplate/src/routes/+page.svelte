@@ -37,14 +37,6 @@
     let matchedVehicle: any = $state(null);
     let gateOpenState = $state(false);
     
-    function openGate() {
-        gateOpenState = true;
-    }
-
-    function closeGate() {
-        gateOpenState = false;
-    }
-
     function normalizePlate(plate: string) {
     return plate
         .toUpperCase()
@@ -107,6 +99,7 @@
                 normalized_detected_plate: normalizedPlate,
             });
             console.log('Posted log data.');
+            openGate();
         } else {
             console.log('Received data.');
             message = 'This plate is not registered.';
@@ -119,7 +112,6 @@
 
             
     let port: SerialPort | null = null;
-    let textToSend = $state("");
 
     async function connectToArduino() {
         try {
@@ -133,17 +125,35 @@
         }
     }
 
-    async function sendState() {
+    async function openGate() {
         if (!port || !port.writable) {
         alert("Please connect to Arduino first!");
         return;
         }
-
+        gateOpenState = true;
         const encoder = new TextEncoder();
         const writer = port.writable.getWriter();
         
         // Add a newline character so Arduino knows the message ended
-        const dataWithNewline = textToSend + "\n"; 
+        const dataWithNewline = "OPEN" + "\n"; 
+
+        console.log(dataWithNewline);
+        
+        await writer.write(encoder.encode(dataWithNewline));
+        writer.releaseLock();
+    }
+
+    async function closeGate() {
+        if (!port || !port.writable) {
+        alert("Please connect to Arduino first!");
+        return;
+        }
+        gateOpenState = false;
+        const encoder = new TextEncoder();
+        const writer = port.writable.getWriter();
+        
+        // Add a newline character so Arduino knows the message ended
+        const dataWithNewline = "CLOSE" + "\n"; 
 
         console.log(dataWithNewline);
         
@@ -233,7 +243,7 @@
             <button class="secondary" onclick={connectToArduino}>
                 Connect Arduino
             </button>
-
+            <!--
             <input
                 type="text"
                 bind:value={textToSend}
@@ -243,6 +253,7 @@
             <button class="primary" onclick={sendState}>
                 Send
             </button>
+            -->
         </div>
     </section> 
 </main>
@@ -255,12 +266,6 @@
             system-ui,
             sans-serif;
         color: #1f2937;
-    }
-
-    .container {
-        max-width: 900px;
-        margin: 2rem auto;
-        padding: 1rem;
     }
 
     .title {
